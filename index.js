@@ -137,6 +137,16 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+// magic
+
+app.post(
+  "/log-in",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/",
+  })
+);
+
 app.listen(3001, (err) => {
   if (err) {
     throw err;
