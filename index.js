@@ -24,7 +24,17 @@ app.use(express.urlencoded({ extended: false }));
 const assetsPath = path.join(__dirname, "public");
 app.use(express.static(assetsPath));
 
-app.get("/", (req, res) => res.render("index"));
+app.get("/", (req, res) => res.render("index", { user: req.user }));
+
+app.get("/log-out", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
+
 app.get("/sign-up", (req, res) => res.render("sign-up-form"));
 
 //post req sign up
