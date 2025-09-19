@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("node:path");
 const app = express();
 
+require("dotenv").config();
+
 const { Pool } = require("pg");
 const session = require("express-session");
 const passport = require("passport");
@@ -23,6 +25,20 @@ const assetsPath = path.join(__dirname, "public");
 app.use(express.static(assetsPath));
 
 app.get("/", (req, res) => res.render("index"));
+app.get("/sign-up", (req, res) => res.render("sign-up-form"));
+
+//post req sign up
+app.post("/sign-up", async (req, res, next) => {
+  try {
+    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
+      req.body.username,
+      req.body.password,
+    ]);
+    res.redirect("/");
+  } catch (err) {
+    return next(err);
+  }
+});
 
 app.listen(3001, (err) => {
   if (err) {
