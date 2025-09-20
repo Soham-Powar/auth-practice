@@ -17,6 +17,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 //new stuff
+const bcrypt = require("bcryptjs");
 app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
 app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
@@ -40,9 +41,10 @@ app.get("/sign-up", (req, res) => res.render("sign-up-form"));
 //post req sign up
 app.post("/sign-up", async (req, res, next) => {
   try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
       req.body.username,
-      req.body.password,
+      hashedPassword,
     ]);
     res.redirect("/");
   } catch (err) {
@@ -87,9 +89,12 @@ passport.use(
         return done(null, false, { message: "Incorrect username" });
       }
 
-      if (user.password !== password) {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        // passwords do not match!
         return done(null, false, { message: "Incorrect password" });
       }
+
       //user found
       return done(null, user);
     } catch (err) {
@@ -157,7 +162,7 @@ app.post(
   })
 );
 
-app.listen(3001, (err) => {
+app.listen(3002, (err) => {
   if (err) {
     throw err;
   }
