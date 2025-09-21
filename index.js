@@ -168,3 +168,10 @@ app.listen(3002, (err) => {
   }
   console.log("here we go at 3001");
 });
+
+// Authentication
+// Who the user is?
+
+// Authorization - OAuth
+// Who has access to what resources
+// What can he do? only get...get/post etc
