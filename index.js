@@ -194,4 +194,17 @@ app.listen(3002, (err) => {
 // session stores bigger data as in cookie u cant
 // put much data (becomes tedious)
 // also..cookie we cant store user credentials
-// as hacker can easily get
+// as hacker can easily get access
+// session is used to store info about a particular
+// user moving through client
+
+// session store implementation
+// what persistent memory we will store our seshs in
+// so in prod env we can store the info we get abt user
+// in a db
+// by default, express session middleware comes with
+// a implementation of session store that uses a
+// appln memory (not scalable)
+
+// setup a sesh store ~ connect db to exp-sesh middleware
+// sesh store == connect-pg-simple
