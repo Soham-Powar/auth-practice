@@ -183,3 +183,15 @@ app.listen(3002, (err) => {
 // sends that cookie through 'cookie' req header to server (so no re-login)
 // hence the server knows
 // how long? expires= piece of set cookie
+
+// cookie vs session
+
+// cookie has data stored in browser
+// browser will attach that cookie key-value pair
+// to every http request it does
+
+// session gets stored on server side (express js appln)
+// session stores bigger data as in cookie u cant
+// put much data (becomes tedious)
+// also..cookie we cant store user credentials
+// as hacker can easily get
