@@ -175,3 +175,11 @@ app.listen(3002, (err) => {
 // Authorization - OAuth
 // Who has access to what resources
 // What can he do? only get...get/post etc
+
+// cookie
+// for some request(first) server sends a cookie
+// to client through set-cookie resp header (if authenticated)
+// for all the following requests(in domain context) - the browser
+// sends that cookie through 'cookie' req header to server (so no re-login)
+// hence the server knows
+// how long? expires= piece of set cookie
