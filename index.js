@@ -145,6 +145,7 @@ passport.use(
 // PROPERTY IN SESSION DATA
 passport.serializeUser((user, done) => {
   done(null, user.id);
+  // put user in sesh - put userid in sesh
 });
 
 // it is called when retrieving a session, where it
@@ -163,6 +164,7 @@ passport.serializeUser((user, done) => {
 
 // we just define them...passport calls them in bg
 passport.deserializeUser(async (id, done) => {
+  // user come out of sesh - find id in db
   try {
     const { rows } = await pool.query("SELECT * FROM users WHERE id = $1", [
       id,
