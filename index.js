@@ -5,6 +5,7 @@ const app = express();
 require("dotenv").config();
 
 const { Pool } = require("pg");
+
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
@@ -18,8 +19,28 @@ app.set("view engine", "ejs");
 
 //new stuff
 const bcrypt = require("bcryptjs");
-app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
+app.use(
+  session({
+    // process.env.secret
+    // to validate session
+    secret: "cats",
+    resave: false,
+    saveUninitialized: false,
+    // above 2 - how session reacts when there
+    // is no changes in browser
+
+    // session id stored in cookie
+    // so
+    // cookie: { maxAge: ...}
+
+    // if using session store
+    // store: sessionStore
+    // and before
+    // const sessionStore = new MongoStore?
+  })
+);
 app.use(passport.session());
+
 app.use(express.urlencoded({ extended: false }));
 
 const assetsPath = path.join(__dirname, "public");
@@ -86,6 +107,8 @@ passport.use(
 
       //false means user not found
       if (!user) {
+        // null means no theres not any error
+        // false means but user also not there(dont validate)
         return done(null, false, { message: "Incorrect username" });
       }
 
