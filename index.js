@@ -172,6 +172,7 @@ passport.deserializeUser(async (id, done) => {
     const user = rows[0];
 
     done(null, user);
+    // it will populate req.user
   } catch (err) {
     done(err);
   }
