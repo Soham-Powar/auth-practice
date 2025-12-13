@@ -1,12 +1,15 @@
+require("dotenv").config();
+
 const express = require("express");
 const path = require("node:path");
-const app = express();
-
-require("dotenv").config();
 
 const { Pool } = require("pg");
 
+//express session is used in bg by passport to manage sessions
+//we dont use it directly here
 const session = require("express-session");
+
+//passport is authentication middleware for nodejs
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
@@ -14,15 +17,17 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
+const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 //new stuff
 const bcrypt = require("bcryptjs");
+//session takes options object
 app.use(
   session({
     // process.env.secret
-    // to validate session
+    // to validate session and sign session id cookie
     secret: "cats",
     resave: false,
     saveUninitialized: false,
@@ -31,7 +36,7 @@ app.use(
 
     // session id stored in cookie
     // so
-    // cookie: { maxAge: ...}
+    // cookie: { maxAge: ...(in millisecs)}
 
     // if using session store
     // store: sessionStore
@@ -39,6 +44,8 @@ app.use(
     // const sessionStore = new MongoStore?
   })
 );
+//app.use(passport.authenticate('session'))
+//this is to authenticate session
 app.use(passport.session());
 
 app.use(express.urlencoded({ extended: false }));
@@ -47,6 +54,16 @@ const assetsPath = path.join(__dirname, "public");
 app.use(express.static(assetsPath));
 
 app.get("/", (req, res) => res.render("index", { user: req.user }));
+//this user is part of res.locals only for this view
+//because we passed it in render method
+//app.use((req, res, next) => {
+//   res.locals.user = req.user;
+//   next();
+// });
+
+// the above middleware makes req.user
+// available in all views without passing
+// it explicitly in res.render
 
 app.get("/log-out", (req, res, next) => {
   req.logout((err) => {
@@ -73,7 +90,6 @@ app.post("/sign-up", async (req, res, next) => {
   }
 });
 
-//or u can strat = new Local...and the passport.use(strategy)
 // HTTP is a stateless protocol, meaning that each
 // request to an application can be understood in
 // isolation - without any context from previous
@@ -96,7 +112,14 @@ app.post("/sign-up", async (req, res, next) => {
 
 // cookies enable servers to store stateful
 // information on user device(cart)
+
+//we can passport.use(strategy)
+//const strategy = new LocalStrategy(....)
+
+//this called when we do passport.authenticate('local')
+//ie- when we do a login attempt
 passport.use(
+  //localStrategy constructed with a verify callback
   new LocalStrategy(async (username, password, done) => {
     try {
       const { rows } = await pool.query(
@@ -119,6 +142,10 @@ passport.use(
       }
 
       //user found
+      //login successful
+      //req.login method called internally by passport
+      // this will pass user obj to serializeUser
+      //this is where sessions are created
       return done(null, user);
     } catch (err) {
       //error like db doesnt exist
@@ -126,6 +153,13 @@ passport.use(
     }
   })
 );
+
+// To maintain a login session,
+// Passport serializes and deserializes user information
+// to and from the session.
+// The information that is stored is determined
+// by the application, which supplies a
+// serializeUser and a deserializeUser function.
 
 // To make sure our user is logged in, and to
 // allow them to stay logged in as they move
@@ -140,14 +174,39 @@ passport.use(
 // it takes a callback which contains info
 // we wish to store in session data
 
+// if successful auth - this is called
 // WHEN SESSION CREATED - THIS WILL RECEIVE
 // USER OBJ FOUND ON SUCC REQ AND STORE ITS ID
 // PROPERTY IN SESSION DATA
+
+//this is called once to set up session
 passport.serializeUser((user, done) => {
   done(null, user.id);
+  // can do {id: user.id, name: user.name}
   // put user in sesh - put userid in sesh
 });
 
+// Now express-session kicks in.
+
+// It:
+// Generates a session ID (e.g. s%3Aas9df...)
+// Stores session data on server
+//by default in memory store - ram (nodejs appln memory)
+// Sends cookie to browser:
+// Set-Cookie: connect.sid=s%3Aabc123...; HttpOnly
+// Browser stores this cookie.
+
+//next time browser makes req to server (EVERY REQ)
+// it sends cookie in req header
+// Cookie: connect.sid=s%3Aabc123...;
+//passport.session() middleware
+// sees this cookie in incoming req
+// and uses it to find the session data on server
+// and gets the id we stored in session data
+// and calls deserializeUser with that id
+
+//deserializeUser
+//after session is authenticated,
 // it is called when retrieving a session, where it
 // will extract data we serialized in it and then
 // ultimately attach something to .user property
@@ -180,6 +239,15 @@ passport.deserializeUser(async (id, done) => {
 
 // magic
 
+//when authentication succeeds, the req.user property is set to the authenticated user,
+// a login session is established, and the next function in the stack is called.
+// This next function is typically application-specific logic which will process the request on behalf of the user.
+
+//if fails, an HTTP 401 Unauthorized response is sent back to the client,
+// and the next function is not called.
+//but its not RESTful way to handle auth failures
+//hence we use successRedirect and failureRedirect
+//failureRedirect - redirect to login page again
 app.post(
   "/log-in",
   passport.authenticate("local", {

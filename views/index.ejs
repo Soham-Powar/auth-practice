@@ -87,7 +87,7 @@
 
 <body>
 	<div class="container">
-		<% if (user) { %>
+		<% if (locals.user) { %>
 			<h1>WELCOME BACK <%= user.username %>
 			</h1>
 			<a href="/log-out">LOG OUT</a>
