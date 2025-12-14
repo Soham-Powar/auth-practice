@@ -67,4 +67,21 @@ http headers - 3 types(general, req, res)
 	- what persistent memory we want to store sesh in
 	- by default it uses in appln memory(memoryStore)
 	- set up session store == connect db to express-session middleware
-	
+
+//secret is used to create signature
+//connect.sid=<seshId>.<signature>
+//if secret changed all sessions invalidated
+
+//passport adds 
+	"passport":{"user":8}}
+to session when a user logs in
+- user id bcz of serialize function
+- later user id taken from session by deserialize function
+	to populate req.user
+- this is made sure by app.use(passport.session())
+
+- passport.authenticate calls req.login automatically
+- req.logout() we have to call
+- it deletes req.session.passport.user
+
+- req.isAuthenticated: checks if above prop is not null
