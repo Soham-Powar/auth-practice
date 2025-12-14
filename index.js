@@ -4,23 +4,29 @@ const express = require("express");
 const path = require("node:path");
 
 const { Pool } = require("pg");
-
 const session = require("express-session");
 
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
+const bcrypt = require("bcryptjs");
+
+// ----------- DB ------------
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
+// ----------- APP ------------
 const app = express();
+
+// ----------- VIEW ENGINE ------------
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
-//new stuff
-const bcrypt = require("bcryptjs");
+// ----------- BODY PARSER ------------
+app.use(express.urlencoded({ extended: false }));
 
+// ----------- SESSION ------------
 app.use(
   session({
     secret: "cats",
@@ -29,40 +35,14 @@ app.use(
   })
 );
 
+// ----------- PASSPORT ------------
 app.use(passport.session());
 
-app.use(express.urlencoded({ extended: false }));
-
+// ----------- STATIC FILES ------------
 const assetsPath = path.join(__dirname, "public");
 app.use(express.static(assetsPath));
 
-app.get("/", (req, res) => res.render("index", { user: req.user }));
-
-app.get("/log-out", (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("/");
-  });
-});
-
-app.get("/sign-up", (req, res) => res.render("sign-up-form"));
-
-//post req sign up
-app.post("/sign-up", async (req, res, next) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      req.body.username,
-      hashedPassword,
-    ]);
-    res.redirect("/");
-  } catch (err) {
-    return next(err);
-  }
-});
-
+// ----------- PASSPORT STRATEGY ------------
 passport.use(
   //localStrategy constructed with a verify callback
   new LocalStrategy(async (username, password, done) => {
@@ -92,6 +72,7 @@ passport.use(
   })
 );
 
+// ----------- PASSPORT SERIALIZE / DESERIALIZE ------------
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
@@ -111,6 +92,34 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+// ----------- ROUTES ------------
+app.get("/", (req, res) => res.render("index", { user: req.user }));
+
+app.get("/log-out", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
+
+app.get("/sign-up", (req, res) => res.render("sign-up-form"));
+
+//post req sign up
+app.post("/sign-up", async (req, res, next) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
+      req.body.username,
+      hashedPassword,
+    ]);
+    res.redirect("/");
+  } catch (err) {
+    return next(err);
+  }
+});
+
 app.post(
   "/log-in",
   passport.authenticate("local", {
@@ -119,6 +128,7 @@ app.post(
   })
 );
 
+// ----------- SERVER ------------
 app.listen(3002, (err) => {
   if (err) {
     throw err;
