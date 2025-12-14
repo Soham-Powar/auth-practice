@@ -1,0 +1,70 @@
+## video 1
+
+auth choices: complexity ----> increases
+(doesnt mean less complex is not good)
+
+	session -- json web tokens -- OAuth -- Other/Ad-hoc
+								/	\
+						  In-house	 SaaS
+
+jwt and session based -
+	its about who the user is? - authentication
+
+things like sign in with google, github - 
+	they are AUTHORIZATION
+	- who has access to what resources (get or get/post, etc)
+	- defined by scopes in access tokens
+
+OAuth - protocol (confusing as Auth0 is SaaS provider)
+	- it seperates 2 components of user authentication
+
+
+## video 2
+
+http headers - 3 types(general, req, res)
+
+	request headers - sent by browser
+		ex> Cookie: connect.sid=abc123
+
+			- 	req.headers
+				req.get("Authorization")
+
+
+	response headers - sent by server
+		ex> Set-Cookie: connect.sid=abc123; HttpOnly
+		- server tells client it wants these cookies
+		- key-value pairs
+		- now browser says that every request we make
+			in this domain will have to have this
+			cookie set
+		- now req headers will have those cookies
+		- set cookie has expires= key to set how long
+
+		-	
+			//this adds a response header
+			res.set("X-Powered-By", "Express");
+
+			//below sets cookie
+			//internally express sends ser-cookie res header
+			res.cookie("token", "abc");
+
+
+## video 3
+
+- session and cookie
+
+- Cookie
+	- cookie has it data stored in browser
+	- browser is going to attach that cookie(key-val)
+		to every request it sends
+
+- session
+	- session is stored on server side(express js appln)
+	- can store more data than cookie
+	- can store private data like credentials
+
+- session store
+	- what persistent memory we want to store sesh in
+	- by default it uses in appln memory(memoryStore)
+	- set up session store == connect db to express-session middleware
+	
