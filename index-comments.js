@@ -121,6 +121,9 @@ app.post("/sign-up", async (req, res, next) => {
 //ie- when we do a login attempt
 passport.use(
   //localStrategy constructed with a verify callback
+
+  //name the fields username and password only in form
+  //or pass customFields obj to LocalStrategy constructor
   new LocalStrategy(async (username, password, done) => {
     try {
       const { rows } = await pool.query(
