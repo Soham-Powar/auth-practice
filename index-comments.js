@@ -10,6 +10,7 @@ const { Pool } = require("pg");
 const session = require("express-session");
 
 //passport is authentication middleware for nodejs
+//it uses strategies to authenticate requests
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 
